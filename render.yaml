@@ -1,0 +1,42 @@
+# Render Blueprint — deploys the API and the static frontend together.
+#
+# 1. Push this whole gamehub-backend/ folder to a GitHub repo (this file
+#    must sit at the repo root).
+# 2. In the Render Dashboard: New -> Blueprint -> connect the repo.
+# 3. Render reads this file and proposes both services below. Click
+#    "Deploy Blueprint". Any envVar marked `sync: false` will prompt you
+#    for a value at that point (or you can set it after, in each service's
+#    Environment tab).
+# 4. After both services deploy, copy the API's URL (something like
+#    https://gamehub-api.onrender.com) into frontend/index.html's
+#    GH_API_BASE line, commit, and push — Render will redeploy the site.
+# 5. See README.md for custom domains and going live with real Razorpay keys.
+
+services:
+  - type: web
+    name: gamehub-api
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: JWT_SECRET
+        generateValue: true
+      - key: ALLOWED_ORIGINS
+        sync: false # set to your site's domain(s) once you have them
+      - key: RAZORPAY_KEY_ID
+        sync: false
+      - key: RAZORPAY_KEY_SECRET
+        sync: false
+      - key: RAZORPAY_WEBHOOK_SECRET
+        sync: false
+
+  - type: web
+    name: gamehub-site
+    runtime: static
+    buildCommand: ""
+    staticPublishPath: ./frontend
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
